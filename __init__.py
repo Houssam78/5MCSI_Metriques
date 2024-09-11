@@ -36,7 +36,7 @@ def histogramme():
     return render_template("graphique.html")
 
 @app.route('/commits/')
-def commits():
+def show_commits():
     return render_template('commits.html')
 
 
