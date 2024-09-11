@@ -36,27 +36,8 @@ def histogramme():
     return render_template("graphique.html")
 
 @app.route('/commits/')
-def commits():
-    url = 'https://api.github.com/repos/Houssam78/5MCSI_Metriques/commits'
-    commits_data = [
-        # Exemple de données manuelles (au cas où la récupération dynamique n'est pas disponible)
-        {'commit': {'author': {'date': '2024-02-11T11:57:27Z'}}},
-        {'commit': {'author': {'date': '2024-02-11T12:01:15Z'}}},
-        {'commit': {'author': {'date': '2024-02-11T12:34:22Z'}}},
-    ]
-
-    # Filtrage des minutes à partir des dates
-    commit_minutes = {}
-    for commit in commits_data:
-        date_string = commit['commit']['author']['date']
-        date_object = datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%SZ')
-        minute = date_object.minute
-        if minute in commit_minutes:
-            commit_minutes[minute] += 1
-        else:
-            commit_minutes[minute] = 1
-
-    return jsonify(results=commit_minutes)
+def show_commits():
+    return render_template('commits.html')
 
 
 
