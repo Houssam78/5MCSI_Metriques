@@ -1,4 +1,5 @@
 from flask import Flask, render_template_string, render_template, jsonify
+import requests
 from flask import render_template
 from flask import json
 from datetime import datetime
@@ -34,6 +35,30 @@ def mongraphique():
 @app.route("/histogramme/")
 def histogramme():
     return render_template("graphique.html")
+
+@app.route('/commits/')
+def commits():
+    # Remplacez l'URL par celle de votre propre dépôt
+    url = 'https://api.github.com/repos/OpenRSI/5MCSI_Metriques/commits'
+    response = requests.get(url)
+    commits_data = response.json()
+    
+    # Compter les commits par minute
+    commits_per_minute = {}
+    
+    for commit in commits_data:
+        date_string = commit['commit']['author']['date']
+        date_object = datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%SZ')
+        minute = date_object.strftime('%Y-%m-%d %H:%M')
+        
+        if minute in commits_per_minute:
+            commits_per_minute[minute] += 1
+        else:
+            commits_per_minute[minute] = 1
+    
+    results = [{'minute': minute, 'count': count} for minute, count in commits_per_minute.items()]
+    
+    return render_template('commits.html', data=json.dumps(results))
 
 
 if __name__ == "__main__":
