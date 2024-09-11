@@ -1,35 +1,76 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="UTF-8">
-    <title>Commits par Minute</title>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Nombre de Commits par Minute</title>
+    <!-- Chargement de la bibliothèque Google Charts -->
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-</head>
-<body>
-    <h2>Nombre de Commits par Minute</h2>
-    <div id="chart_div"></div>
 
-    <script>
-        google.charts.load('current', {packages: ['corechart']});
-        google.charts.setOnLoadCallback(drawChart);
+    <script type="text/javascript">
+      // Fonction pour charger Google Charts
+      google.charts.load('current', { packages: ['corechart'] });
+      google.charts.setOnLoadCallback(drawChart);
 
-        async function fetchCommits() {
-            const response = await fetch('https://api.github.com/repos/OpenRSI/5MCSI_Metriques/commits');
-            const commitsData = await response.json();
-            return commitsData;
+      // Fonction pour récupérer les commits depuis l'API GitHub
+      async function fetchCommits() {
+        try {
+          const response = await fetch('https://api.github.com/repos/OpenRSI/5MCSI_Metriques/commits');
+          const commitsData = await response.json();
+          console.log(commitsData); // Affiche les données dans la console pour le débogage
+          return commitsData;
+        } catch (error) {
+          console.error('Erreur lors de la récupération des commits :', error);
         }
+      }
 
-        function drawChart() {
-            fetchCommits().then(commitsData => {
-                var data = new google.visualization.DataTable();
-                data.addColumn('string', 'Minute');
-                data.addColumn('number', 'Nombre de Commits');
+      // Fonction pour dessiner le graphique
+      function drawChart() {
+        console.log("Google Charts est chargé et la fonction drawChart est appelée.");
+        fetchCommits().then(commitsData => {
+          // Créer un tableau de données pour le graphique
+          var data = new google.visualization.DataTable();
+          data.addColumn('string', 'Minute');
+          data.addColumn('number', 'Nombre de Commits');
 
-                var commitsPerMinute = {};
+          var commitsPerMinute = {};
 
-                commitsData.forEach(commit => {
-                    const dateString = commit.commit.author.date;
-                    const dateObject = new Date(dateString);
-                    const minute = dateObject.getFullYear() + '-' +
-                                   (dateObject.getMonth() + 1).toString().padStart(2, '0') + '-' +
-                                  
+          // Traitement des données des commits
+          commitsData.forEach(commit => {
+            const dateString = commit.commit.author.date;
+            const dateObject = new Date(dateString);
+            const minute = dateObject.getFullYear() + '-' +
+                           (dateObject.getMonth() + 1).toString().padStart(2, '0') + '-' +
+                           dateObject.getDate().toString().padStart(2, '0') + ' ' +
+                           dateObject.getHours().toString().padStart(2, '0') + ':' +
+                           dateObject.getMinutes().toString().padStart(2, '0');
+
+            // Compter le nombre de commits par minute
+            commitsPerMinute[minute] = (commitsPerMinute[minute] || 0) + 1;
+          });
+
+          // Ajouter les données des commits au tableau Google Charts
+          Object.entries(commitsPerMinute).forEach(([minute, count]) => {
+            data.addRow([minute, count]);
+          });
+
+          // Options pour personnaliser le graphique
+          var options = {
+            title: 'Nombre de Commits par Minute',
+            curveType: 'function',
+            legend: { position: 'bottom' }
+          };
+
+          // Dessiner le graphique dans le div avec id 'chart_div'
+          var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+          chart.draw(data, options);
+        });
+      }
+    </script>
+  </head>
+
+  <body>
+    <h2>Nombre de Commits par Minute</h2>
+    <!-- Div pour afficher le graphique -->
+    <div id="chart_div" style="width: 900px; height: 500px;"></div>
+  </body>
+</html>
